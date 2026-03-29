@@ -1,0 +1,6 @@
+pandas>=1.5
+pyarrow>=8.0
+sqlalchemy>=1.4
+flask>=2.0
+# Airflow is optional and heavy; uncomment if you plan to run Airflow locally
+# apache-airflow>=2.6
