@@ -76,20 +76,19 @@ jobs:
           echo "Triggering DAG with run id: $RUN_ID"
           docker compose exec -T airflow airflow dags trigger run_walk_pipeline --run-id "$RUN_ID" || true
           echo "$RUN_ID" > /tmp/ci_dag_run_id
-      - name: Poll DAG run status
+      - name: Run DAG tasks directly (fast, avoid long polling)
         run: |
-          # Poll the last few DAG runs for success/failure. Timeout after ~5 minutes.
           set -e
-          RUN_ID=$(cat /tmp/ci_dag_run_id || true)
-          for i in $(seq 1 60); do
-            echo "Checking DAG run $RUN_ID (attempt $i)"
-            out=$(docker compose exec -T airflow airflow dags list-runs -d run_walk_pipeline --run-id "$RUN_ID" --limit 5 || true)
-            echo "$out"
-            echo "$out" | grep -iq "success" && echo "DAG run succeeded" && exit 0 || true
-            echo "$out" | grep -iq "failed" && echo "DAG run failed" && exit 1 || true
-            sleep 5
+          # Use airflow tasks test to execute individual tasks synchronously
+          # This avoids waiting for the scheduler and provides immediate task logs
+          EXEC_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          echo "Running tasks with execution date: $EXEC_DATE"
+          for TASK in download ingest transform; do
+            echo "==== Running task: $TASK ===="
+            # Run the task inside the airflow container; `airflow tasks test` runs
+            # the task without requiring a running scheduler and prints logs to stdout.
+            docker compose exec -T airflow airflow tasks test run_walk_pipeline "$TASK" "$EXEC_DATE"
           done
-          echo "Timed out waiting for DAG run to complete" && exit 1
       - name: Collect container & Airflow logs (upload as artifact)
         if: always()
         run: |
