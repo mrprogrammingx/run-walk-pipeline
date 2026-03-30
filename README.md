@@ -1,4 +1,5 @@
-# [![CI](https://github.com/mrprogrammingx/run-walk-pipeline/actions/workflows/airflow-integration.yml/badge.svg)](https://github.com/mrprogrammingx/run-walk-pipeline/actions/workflows/airflow-integration.yml)
+# [![CI](https://github.com/mrprogrammingx/run-walk-pipeline/actions/workflows/ci.yml/badge.svg)](https://github.com/mrprogrammingx/run-walk-pipeline/actions/workflows/ci.yml)
+# [![Airflow CI](https://github.com/mrprogrammingx/run-walk-pipeline/actions/workflows/airflow-integration.yml/badge.svg)](https://github.com/mrprogrammingx/run-walk-pipeline/actions/workflows/airflow-integration.yml)
 # run-walk-pipeline
 
 Small example pipeline structure for ingesting run/walk data, transforming it, and exposing a tiny dashboard.
