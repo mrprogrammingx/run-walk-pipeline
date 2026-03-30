@@ -1,0 +1,18 @@
+version: '3.7'
+
+services:
+  airflow:
+    image: apache/airflow:2.6.3
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+      - AIRFLOW__CORE__DAGS_FOLDER=/opt/airflow/dags
+    volumes:
+      - ./airflow:/opt/airflow/dags:ro
+      - ./warehouse:/opt/airflow/warehouse
+      - ./lake:/opt/airflow/lake
+      - ./:/opt/airflow/repo:ro
+    ports:
+      - "8080:8080"
+    command: "standalone"
+    restart: unless-stopped
