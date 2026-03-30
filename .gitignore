@@ -205,3 +205,18 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# --- Data engineering: ignore local data and generated artifacts ---
+# Raw datasets and any large files (keep data/raw/ out of repo)
+data/raw/
+# Processed or intermediate data
+data/processed/
+# Parquet lake output
+lake/parquet/
+# Local analytics DB created during development; keep out of repo unless intentionally tracked
+warehouse/*.db
+# Avoid accidentally committing Kaggle credentials if placed in the repo root
+.kaggle/
+
+# macOS Finder metadata
+.DS_Store
