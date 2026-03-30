@@ -1,17 +1,22 @@
 # run-walk-pipeline
 
-Small example pipeline structure for ingesting run/walk data, transforming it and exposing a tiny dashboard.
+Small example pipeline structure for ingesting run/walk data, transforming it, and exposing a tiny dashboard.
 
 Project layout
 
 run-walk-pipeline/
-├── data/ (raw data goes here)
-├── lake/ (Parquet lake)
-├── warehouse/ (DuckDB analytics DB)
-├── ingestion/ingest.py (script to convert CSV -> Parquet)
-├── transform/transform.sql (SQL to create analytics table)
-├── dashboard/app.py (very small Flask app to serve analytics)
-├── airflow/dag.py (example Airflow DAG)
+├── data/                 # raw CSVs (not checked in)
+├── lake/                 # Parquet lake (generated)
+│   └── parquet/
+├── warehouse/            # DuckDB analytics DB (generated)
+├── ingestion/            # CSV -> Parquet ingestion code
+│   └── ingest.py
+├── transform/            # SQL transforms
+│   └── transform.sql
+├── dashboard/            # small Flask dashboard
+│   └── app.py
+├── airflow/              # example Airflow DAG
+│   └── dag.py
 ├── requirements.txt
 └── README.md
 
@@ -89,16 +94,16 @@ Security note: keep your `.env` file out of version control (add `.env` to `.git
 
 3. Run the ingestion step manually:
 
-The ingestion script imports the repository-level `config` module, so it's easiest
-to run it as a module from the repository root which ensures the package import
-paths are correct:
+The ingestion script imports the repository-level `config` module, so the
+recommended (reliable) way to run it is as a module from the repository root:
 
 ```bash
 python -m ingestion.ingest --raw-dir data/raw --out lake/parquet/runs.parquet
 ```
 
-Alternatively, you can run the script directly but must ensure the repository
-root is on `PYTHONPATH` (or run from the repo root with `-m` as above):
+Running `ingestion/ingest.py` directly may fail with import errors unless you
+ensure the repo root is on `PYTHONPATH`. Use the `-m` form to avoid that class
+of problems. (You can also use `make ingest` which runs the recommended command.)
 
 ```bash
 # from repo root
@@ -136,7 +141,8 @@ source .venv/bin/activate
 python -m transform.run_transform
 ```
 
-If your environment doesn't have DuckDB installed, add it to your requirements:
+Note: DuckDB is listed in `requirements.txt`, so installing dependencies via
+`pip install -r requirements.txt` (or `make venv`) will install it.
 
 ```bash
 pip install duckdb
