@@ -2,6 +2,18 @@
 
 Small example pipeline structure for ingesting run/walk data, transforming it, and exposing a tiny dashboard.
 
+Problem statement
+-----------------
+
+This project demonstrates a complete end-to-end batch data pipeline for activity monitoring. The pipeline ingests raw device CSVs (run/walk samples), stores them in a Parquet data lake, transforms and materializes aggregated tables in a DuckDB data warehouse, and exposes both an interactive Streamlit dashboard and a lightweight JSON endpoint for consumers. The dashboard helps answer simple operational questions, for example: "How much activity did each user record over time?" and "What proportion of samples are running vs walking?".
+
+What you'll see
+---------------
+
+- Tile 1 — Activity distribution: a categorical visualization (pie chart) showing the share of samples by activity type (walking vs running). This helps understand overall activity composition.
+- Tile 2 — Samples over time: a temporal line chart showing sample counts per day (and per user when selected). This helps spot trends, gaps, or anomalies in data collection.
+
+
 Project layout
 
 ```text
@@ -177,6 +189,15 @@ Note: this repository also includes a very small Flask-based dashboard at
 access to the materialized `daily_user_summary` table. Use the Streamlit app
 for interactive exploration and the Flask endpoint when you need a lightweight
 HTTP JSON API (for scripts or monitoring tools).
+
+Screenshot (placeholder)
+-------------------------
+
+If you review this project, include a screenshot of the Streamlit dashboard
+here. For now there's a placeholder image you can replace with an actual
+screenshot (save the file as `docs/screenshot.png` and update the path below):
+
+![Streamlit dashboard placeholder](docs/screenshot.png)
 ```
 
 5. Start the dashboard (Flask):
