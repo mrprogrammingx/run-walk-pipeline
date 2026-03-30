@@ -30,14 +30,28 @@ jobs:
         run: |
           set -x
           docker compose -f docker-compose.yml up -d --build || (docker compose ps --all || true; docker compose logs --no-color --timestamps || true; exit 1)
-      - name: Run Airflow DB migrations
+      - name: Run Airflow DB migrations (wait for Airflow readiness)
         run: |
           set -e
           # Ensure the Airflow metadata DB is initialized before running any CLI commands
           for i in $(seq 1 60); do
             docker compose exec -T postgres pg_isready -U airflow >/dev/null 2>&1 && break || sleep 2
           done
-          docker compose exec -T airflow airflow db migrate
+          # Wait for the Airflow container to be responsive (this may take longer
+          # if the image is installing additional Python packages at startup).
+          for i in $(seq 1 60); do
+            docker compose exec -T airflow airflow info >/dev/null 2>&1 && break || sleep 2
+          done
+          # Run migrations and retry a few times to tolerate transient startup races
+          for i in $(seq 1 12); do
+            if docker compose exec -T airflow airflow db migrate; then
+              echo "airflow db migrate succeeded"
+              break
+            else
+              echo "airflow db migrate failed, retrying..."
+              sleep 5
+            fi
+          done
       - name: Create simple-auth generated passwords file
         run: |
           # Create the generated simple auth passwords file so admin/admin works with SimpleAuthManager
@@ -76,6 +90,26 @@ jobs:
             sleep 5
           done
           echo "Timed out waiting for DAG run to complete" && exit 1
+      - name: Collect container & Airflow logs (upload as artifact)
+        if: always()
+        run: |
+          set -e || true
+          mkdir -p /tmp/ci_logs
+          echo "Saving docker compose logs to /tmp/ci_logs/docker_compose_all.log"
+          docker compose logs --no-color --timestamps > /tmp/ci_logs/docker_compose_all.log || true
+          echo "Saving airflow container logs to /tmp/ci_logs/airflow.log"
+          docker compose logs airflow --no-color --timestamps > /tmp/ci_logs/airflow.log || true
+          echo "Saving postgres container logs to /tmp/ci_logs/postgres.log"
+          docker compose logs postgres --no-color --timestamps > /tmp/ci_logs/postgres.log || true
+          # Try to collect task logs from the airflow logs folder inside the container
+          docker compose exec -T airflow sh -c "mkdir -p /tmp/ci_task_logs; cp -r /opt/airflow/logs /tmp/ci_task_logs || true; tar -czf /tmp/ci_logs/airflow_task_logs.tar.gz -C /tmp/ci_task_logs logs || true" || true
+          ls -lah /tmp/ci_logs || true
+      - name: Upload logs artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-container-logs
+          path: /tmp/ci_logs
       - name: Tear down
         if: always()
         run: docker compose down -v
