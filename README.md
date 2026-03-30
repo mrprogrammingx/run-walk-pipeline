@@ -24,6 +24,19 @@ Streamlit Dashboard + Flask API
 
 This architecture shows the simple, file-first local workflow used in this project: ingest raw CSVs into a Parquet lake, run lightweight SQL transforms over DuckDB to produce small materialized summary tables, and expose those summaries to interactive and programmatic dashboards.
 
+This project implements a **batch data pipeline**, executed periodically using Airflow.
+
+Orchestration
+-------------
+
+Apache Airflow is used to orchestrate the pipeline (optional for local runs). The example DAG (`airflow/dag.py`) defines three high-level tasks:
+
+- download dataset
+- ingest CSV → Parquet
+- run transformations in DuckDB
+
+Run `airflow/dag.py` as an example DAG (see the `docker-compose.yml` for a local Airflow development setup) or run the tasks manually using the provided Makefile targets.
+
 What you'll see
 ---------------
 
