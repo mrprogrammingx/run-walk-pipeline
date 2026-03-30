@@ -16,6 +16,23 @@ LOGGER = logging.getLogger(__name__)
 
 REPO_ROOT = os.path.abspath(os.path.dirname(__file__))
 
+# Default dataset to download (can be overridden via environment)
+DATASET = os.environ.get("KAGGLE_DATASET", "vmalyi/run-or-walk")
+
+
+def get_logger(name: str = __name__) -> logging.Logger:
+    """Return a logger configured at INFO level with a simple formatter.
+
+    Calling this repeatedly is cheap; handlers are added only if the logger
+    doesn't already have them.
+    """
+    logger = logging.getLogger(name)
+    if not logger.handlers:
+        handler = logging.StreamHandler()
+        handler.setFormatter(logging.Formatter("%(levelname)s: %(message)s"))
+        logger.addHandler(handler)
+    return logger
+
 
 def _load_dotenv() -> None:
     """Try to load a .env file using python-dotenv if available, otherwise
