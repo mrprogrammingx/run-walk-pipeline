@@ -23,8 +23,9 @@ import subprocess
 from typing import List, Optional, Tuple
 
 
-LOGGER = logging.getLogger(__name__)
-DATASET = "vmalyi/run-or-walk"
+from config import DATASET, get_logger
+
+LOGGER = get_logger(__name__)
 
 
 def _load_env_fallback(repo_root: str) -> None:
