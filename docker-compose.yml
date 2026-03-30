@@ -1,18 +1,39 @@
-version: '3.7'
+version: '3.8'
 
 services:
-  airflow:
-    image: apache/airflow:2.6.3
+  postgres:
+    image: postgres:14
     environment:
-      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
-      - AIRFLOW__CORE__LOAD_EXAMPLES=False
-      - AIRFLOW__CORE__DAGS_FOLDER=/opt/airflow/dags
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - postgres-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U airflow"]
+      interval: 5s
+      retries: 5
+
+  airflow:
+    image: apache/airflow:3.0.6
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
+      AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/dags
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'False'
+      # Install lightweight runtime deps needed by the project's DAG
+      _PIP_ADDITIONAL_REQUIREMENTS: 'duckdb pandas pyarrow'
     volumes:
       - ./airflow:/opt/airflow/dags:ro
-      - ./warehouse:/opt/airflow/warehouse
-      - ./lake:/opt/airflow/lake
-      - ./:/opt/airflow/repo:ro
+      - ./logs:/opt/airflow/logs
+      - ./plugins:/opt/airflow/plugins
     ports:
       - "8080:8080"
     command: "standalone"
-    restart: unless-stopped
+
+volumes:
+  postgres-db:
+
