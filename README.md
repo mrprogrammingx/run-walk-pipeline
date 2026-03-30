@@ -66,9 +66,23 @@ Security note: keep your `.env` file out of version control (add `.env` to `.git
 
 3. Run the ingestion step manually:
 
+The ingestion script imports the repository-level `config` module, so it's easiest
+to run it as a module from the repository root which ensures the package import
+paths are correct:
+
 ```bash
-python ingestion/ingest.py --raw-dir data/raw --out lake/parquet/runs.parquet
+python -m ingestion.ingest --raw-dir data/raw --out lake/parquet/runs.parquet
 ```
+
+Alternatively, you can run the script directly but must ensure the repository
+root is on `PYTHONPATH` (or run from the repo root with `-m` as above):
+
+```bash
+# from repo root
+PYTHONPATH=. python ingestion/ingest.py --raw-dir data/raw --out lake/parquet/runs.parquet
+```
+
+The `-m` approach is recommended because it avoids needing to set `PYTHONPATH`.
 
 4. Transform (quick local transform, does not require Airflow):
 
