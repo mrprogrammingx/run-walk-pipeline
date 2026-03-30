@@ -13,6 +13,9 @@ jobs:
       - uses: actions/checkout@v4
       - name: Set up Docker Compose
         uses: docker/setup-buildx-action@v3
+      - name: Create sample parquet for CI
+        run: |
+          python3 scripts/create_sample_parquet.py
       - name: Start docker-compose
         run: |
           docker compose -f docker-compose.yml up -d --build
@@ -44,14 +47,18 @@ jobs:
           docker compose exec -T airflow airflow dags list
       - name: Trigger DAG
         run: |
-          docker compose exec -T airflow airflow dags trigger run_walk_pipeline || true
+          RUN_ID="ci_run_$(date +%s)"
+          echo "Triggering DAG with run id: $RUN_ID"
+          docker compose exec -T airflow airflow dags trigger run_walk_pipeline --run-id "$RUN_ID" || true
+          echo "$RUN_ID" > /tmp/ci_dag_run_id
       - name: Poll DAG run status
         run: |
           # Poll the last few DAG runs for success/failure. Timeout after ~5 minutes.
           set -e
+          RUN_ID=$(cat /tmp/ci_dag_run_id || true)
           for i in $(seq 1 60); do
-            echo "Checking DAG runs (attempt $i)"
-            out=$(docker compose exec -T airflow airflow dags list-runs -d run_walk_pipeline --limit 5 || true)
+            echo "Checking DAG run $RUN_ID (attempt $i)"
+            out=$(docker compose exec -T airflow airflow dags list-runs -d run_walk_pipeline --run-id "$RUN_ID" --limit 5 || true)
             echo "$out"
             echo "$out" | grep -iq "success" && echo "DAG run succeeded" && exit 0 || true
             echo "$out" | grep -iq "failed" && echo "DAG run failed" && exit 1 || true

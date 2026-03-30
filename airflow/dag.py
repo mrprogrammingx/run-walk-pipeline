@@ -72,7 +72,17 @@ if HAS_AIRFLOW:
         # create the DAG in an unpaused state so it's immediately runnable in dev
         is_paused_upon_creation=False,
     ):
-        download = PythonOperator(task_id="download", python_callable=lambda **kw: __import__('ingestion.download_kaggle', fromlist=['']).download_dataset(RAW_DIR))
+        # The download task uses Kaggle CLI and may not be available in CI. Wrap it to
+        # skip gracefully when credentials or CLI are missing so the rest of the DAG can run
+        def _safe_download(**kw):
+            try:
+                mod = __import__('ingestion.download_kaggle', fromlist=[''])
+                mod.download_dataset(RAW_DIR)
+            except Exception as exc:
+                # Log and continue; CI will provide sample parquet instead of downloading
+                print(f"Download skipped: {exc}")
+
+        download = PythonOperator(task_id="download", python_callable=_safe_download)
         ingest = PythonOperator(task_id="ingest", python_callable=task_ingest)
         transform = PythonOperator(task_id="transform", python_callable=task_transform)
 

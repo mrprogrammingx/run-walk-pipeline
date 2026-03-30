@@ -30,6 +30,10 @@ services:
       - ./airflow:/opt/airflow/dags:ro
       - ./logs:/opt/airflow/logs
       - ./plugins:/opt/airflow/plugins
+      # Mount project data so DAG tasks can access the lake, data, and warehouse paths
+      - ./lake:/opt/airflow/lake
+      - ./data:/opt/airflow/data
+      - ./warehouse:/opt/airflow/warehouse
     ports:
       - "8080:8080"
     command: "standalone"
