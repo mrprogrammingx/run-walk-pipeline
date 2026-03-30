@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "run-walk-pipeline"
+version = "0.1.0"
+description = "Demo run-vs-walk data pipeline and dashboard (Data Engineering Zoomcamp example)"
+authors = [ { name = "", email = "" } ]
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "pandas>=1.5",
+    "pyarrow>=8.0",
+    "sqlalchemy>=1.4",
+    "python-dotenv>=0.19.0",
+    "duckdb>=1.0",
+    "streamlit>=1.24",
+    "plotly>=5.0",
+    "flask>=2.0"
+]
