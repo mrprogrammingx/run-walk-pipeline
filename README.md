@@ -7,6 +7,23 @@ Problem statement
 
 This project demonstrates a complete end-to-end batch data pipeline for activity monitoring. The pipeline ingests raw device CSVs (run/walk samples), stores them in a Parquet data lake, transforms and materializes aggregated tables in a DuckDB data warehouse, and exposes both an interactive Streamlit dashboard and a lightweight JSON endpoint for consumers. The dashboard helps answer simple operational questions, for example: "How much activity did each user record over time?" and "What proportion of samples are running vs walking?".
 
+Architecture
+------------
+
+Batch pipeline (high level):
+
+CSV (Kaggle dataset)
+	↓
+Parquet (Data Lake)
+	↓
+DuckDB (Data Warehouse)
+	↓
+SQL Transformations (materialized tables)
+	↓
+Streamlit Dashboard + Flask API
+
+This architecture shows the simple, file-first local workflow used in this project: ingest raw CSVs into a Parquet lake, run lightweight SQL transforms over DuckDB to produce small materialized summary tables, and expose those summaries to interactive and programmatic dashboards.
+
 What you'll see
 ---------------
 
