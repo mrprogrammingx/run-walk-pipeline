@@ -18,9 +18,10 @@ jobs:
           docker compose -f docker-compose.yml up -d --build
       - name: Run Airflow DB migrations
         run: |
+          set -e
           # Ensure the Airflow metadata DB is initialized before running any CLI commands
           for i in $(seq 1 60); do
-            docker compose exec -T postgres pg_isready -U postgres >/dev/null 2>&1 && break || sleep 2
+            docker compose exec -T postgres pg_isready -U airflow >/dev/null 2>&1 && break || sleep 2
           done
           docker compose exec -T airflow airflow db migrate
       - name: Create simple-auth generated passwords file
