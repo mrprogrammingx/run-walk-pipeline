@@ -55,6 +55,11 @@ docker compose down
 
 If your system uses the old `docker-compose` binary, replace `docker compose` with `docker-compose` in the commands above.
 
+Note about extra Python packages in the Airflow container
+-------------------------------------------------------
+
+The provided `docker-compose.yml` sets `_PIP_ADDITIONAL_REQUIREMENTS` for the Airflow container so it will install `duckdb`, `pandas`, and `pyarrow` at first startup. This helps avoid `ModuleNotFoundError` for `duckdb` when the example DAG is parsed in the container and makes the local Docker-based Airflow stack ready to run the transforms without building a custom image.
+
 What you'll see
 ---------------
 
@@ -116,6 +121,13 @@ make ingest
 make test
 ```
 
+Additional targets:
+
+```bash
+# create a small sample Parquet and run the test suite (CI-style)
+make ci
+```
+
 If you don't have `make` available you can use the equivalent commands shown elsewhere in this README (for example `python -m ingestion.download_kaggle` and `python -m ingestion.ingest`).
 
 Dataset source
@@ -128,6 +140,17 @@ https://www.kaggle.com/datasets/vmalyi/run-or-walk/data
 Download the dataset manually from the above URL and place the CSV files into `data/raw/`.
 
 Note: an optional helper script `ingestion/download_kaggle.py` exists to automate the download if you prefer (it requires Kaggle API credentials). Manual placement is the recommended approach if you don't want to store or configure credentials.
+
+Create sample Parquet (for tests / CI)
+------------------------------------
+
+To make it easy to run the test suite locally (and to reproduce CI), the repository includes a small helper script that writes a tiny sample Parquet file used by tests:
+
+```bash
+python scripts/create_sample_parquet.py
+# or run the CI-style Makefile target which invokes the script and then runs tests:
+make ci
+```
 
 Automated download (Kaggle)
 ---------------------------
