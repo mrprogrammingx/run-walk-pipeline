@@ -144,10 +144,21 @@ python -m transform.run_transform
 Note: DuckDB is listed in `requirements.txt`, so installing dependencies via
 `pip install -r requirements.txt` (or `make venv`) will install it.
 
+Streamlit dashboard (how to run)
+--------------------------------
+
+If you'd like the richer Streamlit dashboard (interactive plots), install the
+required packages and run:
+
 ```bash
-pip install duckdb
-# or add `duckdb` to requirements.txt
+source .venv/bin/activate
+pip install -r requirements.txt
+streamlit run dashboard/streamlit_app.py
 ```
+
+The Streamlit app will open at http://localhost:8501 by default. It prefers a
+read-only connection to `warehouse/analytics.duckdb` and falls back to reading
+the Parquet file if the DB file is unavailable or locked.
 ```
 
 5. Start the dashboard (Flask):
