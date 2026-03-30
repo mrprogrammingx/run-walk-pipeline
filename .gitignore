@@ -222,6 +222,8 @@ airflow/logs/
 .playwright/
 # Test temporary output
 tests/tmp_raw/
+# Generic logs directory
+logs/
 # Avoid accidentally committing Kaggle credentials if placed in the repo root
 .kaggle/
 
