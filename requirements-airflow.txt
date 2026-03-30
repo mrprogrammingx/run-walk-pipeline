@@ -1,0 +1,4 @@
+# Optional requirements to install Apache Airflow into the project venv.
+# Install with constraints matching your Python version. Default pinned version below.
+apache-airflow==3.0.6
+# Add extras if you need providers (e.g. 'apache-airflow[postgres]==3.0.6')
