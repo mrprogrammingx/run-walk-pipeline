@@ -37,6 +37,24 @@ Apache Airflow is used to orchestrate the pipeline (optional for local runs). Th
 
 Run `airflow/dag.py` as an example DAG (see the `docker-compose.yml` for a local Airflow development setup) or run the tasks manually using the provided Makefile targets.
 
+Run Airflow locally (docker-compose)
+-----------------------------------
+
+If you want to run the example DAG locally using Docker Compose, from the repository root:
+
+```bash
+# starts services in the background (docker compose v2)
+docker compose up -d
+
+# follow logs (optional)
+docker compose logs -f
+
+# stop and remove containers when finished
+docker compose down
+```
+
+If your system uses the old `docker-compose` binary, replace `docker compose` with `docker-compose` in the commands above.
+
 What you'll see
 ---------------
 
