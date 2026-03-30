@@ -179,6 +179,18 @@ can query them quickly without scanning the full Parquet every time):
 - `daily_activity_counts` — counts of each activity code per date/user
 - `daily_wrist_counts` — counts of wrist values per date/user
 
+DuckDB tables are materialized to avoid repeated scanning of Parquet files and improve dashboard performance.
+
+Data Model
+----------
+
+Main tables:
+
+- `daily_user_summary`: aggregated metrics per user per day
+- `daily_activity_counts`: counts of walking vs running
+- `daily_wrist_counts`: sensor distribution
+
+
 Code mappings
 -------------
 
