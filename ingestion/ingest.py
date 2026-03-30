@@ -15,6 +15,7 @@ def ingest_csvs_to_parquet(raw_dir: str, out_path: str) -> int:
     """
     raw_dir = os.path.abspath(raw_dir)
     csv_files = sorted(glob.glob(os.path.join(raw_dir, "*.csv")))
+    print(f"Found {len(csv_files)} CSV files in {raw_dir}")
     if not csv_files:
         print(f"No CSV files found in {raw_dir}")
         return 0
@@ -37,8 +38,22 @@ def ingest_csvs_to_parquet(raw_dir: str, out_path: str) -> int:
 
 if __name__ == "__main__":
     repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-    default_raw = os.path.join(repo_root, "data", "raw")
-    default_out = os.path.join(repo_root, "lake", "parquet", "runs.parquet")
+    # Load config values from central config module (which already loads .env)
+    from config import get_env, repo_path
+
+    env_raw = get_env("DEFAULT_RAW")
+    env_out = get_env("DEFAULT_OUT")
+
+    if env_raw:
+        # if provided as relative path, make it relative to repo_root
+        default_raw = os.path.abspath(env_raw) if os.path.isabs(env_raw) else repo_path(env_raw)
+    else:
+        default_raw = repo_path("data", "raw")
+
+    if env_out:
+        default_out = os.path.abspath(env_out) if os.path.isabs(env_out) else repo_path(env_out)
+    else:
+        default_out = repo_path("lake", "parquet", "runs.parquet")
 
     parser = argparse.ArgumentParser(description="Ingest CSVs to Parquet")
     parser.add_argument("--raw-dir", default=default_raw, help="Directory with raw CSV files")
