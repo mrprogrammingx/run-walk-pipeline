@@ -216,6 +216,12 @@ data/processed/
 lake/parquet/
 # Local analytics DB created during development; keep out of repo unless intentionally tracked
 warehouse/*.db
+warehouse/*.duckdb
+airflow/logs/
+# Playwright browser artifacts
+.playwright/
+# Test temporary output
+tests/tmp_raw/
 # Avoid accidentally committing Kaggle credentials if placed in the repo root
 .kaggle/
 
