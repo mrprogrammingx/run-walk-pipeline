@@ -168,6 +168,12 @@ streamlit run dashboard/streamlit_app.py
 The Streamlit app will open at http://localhost:8501 by default. It prefers a
 read-only connection to `warehouse/analytics.duckdb` and falls back to reading
 the Parquet file if the DB file is unavailable or locked.
+
+Note: this repository also includes a very small Flask-based dashboard at
+`dashboard/app.py` that serves a JSON endpoint (`/summary`) for programmatic
+access to the materialized `daily_user_summary` table. Use the Streamlit app
+for interactive exploration and the Flask endpoint when you need a lightweight
+HTTP JSON API (for scripts or monitoring tools).
 ```
 
 5. Start the dashboard (Flask):
