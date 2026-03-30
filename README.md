@@ -25,7 +25,44 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-2. Put CSV files in `data/raw/` (a sample file `data/raw/sample_runs.csv` is included).
+2. Put CSV files in `data/raw/`.
+
+Dataset source
+---------------
+
+The dataset used for this project is available on Kaggle:
+
+https://www.kaggle.com/datasets/vmalyi/run-or-walk/data
+
+Download the dataset manually from the above URL and place the CSV files into `data/raw/`.
+
+Note: an optional helper script `ingestion/download_kaggle.py` exists to automate the download if you prefer (it requires Kaggle API credentials). Manual placement is the recommended approach if you don't want to store or configure credentials.
+
+Automated download (Kaggle)
+---------------------------
+
+If you'd like to download the dataset programmatically instead of placing files into `data/raw/` manually, this repo includes a small helper script at `ingestion/download_kaggle.py`.
+
+1. Create a `.env` file in the repository root with your Kaggle token:
+
+```text
+KAGGLE_API_TOKEN=KGAT_<base64(username:api_key)>
+# Example (do not commit this file to git):
+# KAGGLE_API_TOKEN=KGAT_abcd1234...
+```
+
+If you prefer the standard Kaggle credentials file, you can also place `kaggle.json` in `~/.kaggle/`.
+
+2. Run the downloader using the project's virtualenv Python (recommended):
+
+```bash
+source .venv/bin/activate
+python -m ingestion.download_kaggle
+```
+
+The script will create `~/.kaggle/kaggle.json` for the current user (derived from the token when possible), call the `kaggle` CLI to download and unzip the dataset into `data/raw/`, and list the downloaded files.
+
+Security note: keep your `.env` file out of version control (add `.env` to `.gitignore` if necessary).
 
 3. Run the ingestion step manually:
 
@@ -57,3 +94,4 @@ Notes
 
 - The Airflow DAG is an example and may require adjusting Python path so Airflow can import the `ingestion` package.
 - This repository is intentionally minimal to be a starting point. Add CI, tests and configuration as needed.
+
