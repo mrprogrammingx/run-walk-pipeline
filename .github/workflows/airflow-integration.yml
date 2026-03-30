@@ -19,6 +19,10 @@ jobs:
           echo "Python:" $(python3 --version || true)
           echo "Docker:" $(docker --version || true)
           echo "Docker Compose:" $(docker compose version || true)
+      - name: Install Python deps for CI
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install pandas pyarrow
       - name: Create sample parquet for CI
         run: |
           python3 scripts/create_sample_parquet.py
