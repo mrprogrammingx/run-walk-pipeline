@@ -4,6 +4,7 @@ Small example pipeline structure for ingesting run/walk data, transforming it, a
 
 Project layout
 
+```text
 run-walk-pipeline/
 ├── data/                 # raw CSVs (not checked in)
 ├── lake/                 # Parquet lake (generated)
@@ -13,12 +14,14 @@ run-walk-pipeline/
 │   └── ingest.py
 ├── transform/            # SQL transforms
 │   └── transform.sql
-├── dashboard/            # small Flask dashboard
-│   └── app.py
+├── dashboard/            # dashboards (Streamlit UI + Flask JSON API)
+│   ├── streamlit_app.py  # interactive Streamlit UI
+│   └── app.py            # tiny Flask JSON endpoint (/summary)
 ├── airflow/              # example Airflow DAG
 │   └── dag.py
 ├── requirements.txt
 └── README.md
+```
 
 Quick start (macOS / zsh)
 
