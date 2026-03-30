@@ -198,6 +198,30 @@ here. For now there's a placeholder image you can replace with an actual
 screenshot (save the file as `docs/screenshot.png` and update the path below):
 
 ![Streamlit dashboard placeholder](docs/screenshot.png)
+
+Capture a screenshot automatically
+---------------------------------
+
+You can automatically capture a screenshot of the Streamlit dashboard using the
+helper script `scripts/capture_streamlit_screenshot.py`. It uses Playwright to
+render the page and save `docs/screenshot.png`.
+
+Install Playwright and browser binaries into your active venv:
+
+```bash
+source .venv/bin/activate
+pip install playwright
+playwright install
+```
+
+Then run the script (Streamlit must be available in the venv):
+
+```bash
+python scripts/capture_streamlit_screenshot.py
+```
+
+This will start Streamlit, take a full-page screenshot, and write it to
+`docs/screenshot.png` (replacing the placeholder).
 ```
 
 5. Start the dashboard (Flask):
