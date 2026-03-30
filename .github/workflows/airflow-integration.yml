@@ -1,0 +1,32 @@
+name: Airflow integration smoke
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  airflow-integration:
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Docker Compose
+        uses: docker/setup-buildx-action@v3
+      - name: Start docker-compose
+        run: |
+          docker compose -f docker-compose.yml up -d --build
+      - name: Wait for Airflow
+        run: |
+          for i in $(seq 1 60); do
+            docker compose exec -T airflow airflow info >/dev/null 2>&1 && break || sleep 2
+          done
+      - name: List DAGs
+        run: |
+          docker compose exec -T airflow airflow dags list
+      - name: Trigger DAG
+        run: |
+          docker compose exec -T airflow airflow dags trigger run_walk_pipeline || true
+      - name: Tear down
+        if: always()
+        run: docker compose down -v
