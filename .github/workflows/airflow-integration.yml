@@ -16,17 +16,47 @@ jobs:
       - name: Start docker-compose
         run: |
           docker compose -f docker-compose.yml up -d --build
+      - name: Run Airflow DB migrations
+        run: |
+          # Ensure the Airflow metadata DB is initialized before running any CLI commands
+          for i in $(seq 1 60); do
+            docker compose exec -T postgres pg_isready -U postgres >/dev/null 2>&1 && break || sleep 2
+          done
+          docker compose exec -T airflow airflow db migrate
+      - name: Create simple-auth generated passwords file
+        run: |
+          # Create the generated simple auth passwords file so admin/admin works with SimpleAuthManager
+          docker compose exec -T airflow python -c 'import json, pathlib; pathlib.Path("/opt/airflow/simple_auth_manager_passwords.json.generated").write_text(json.dumps({"admin":"admin"})); print("wrote /opt/airflow/simple_auth_manager_passwords.json.generated")'
+      - name: Restart Airflow container to pick up auth file
+        run: |
+          docker compose restart airflow
       - name: Wait for Airflow
         run: |
           for i in $(seq 1 60); do
             docker compose exec -T airflow airflow info >/dev/null 2>&1 && break || sleep 2
           done
+      - name: Show DAG import errors (if any)
+        run: |
+          docker compose exec -T airflow airflow dags list-import-errors || true
       - name: List DAGs
         run: |
           docker compose exec -T airflow airflow dags list
       - name: Trigger DAG
         run: |
           docker compose exec -T airflow airflow dags trigger run_walk_pipeline || true
+      - name: Poll DAG run status
+        run: |
+          # Poll the last few DAG runs for success/failure. Timeout after ~5 minutes.
+          set -e
+          for i in $(seq 1 60); do
+            echo "Checking DAG runs (attempt $i)"
+            out=$(docker compose exec -T airflow airflow dags list-runs -d run_walk_pipeline --limit 5 || true)
+            echo "$out"
+            echo "$out" | grep -iq "success" && echo "DAG run succeeded" && exit 0 || true
+            echo "$out" | grep -iq "failed" && echo "DAG run failed" && exit 1 || true
+            sleep 5
+          done
+          echo "Timed out waiting for DAG run to complete" && exit 1
       - name: Tear down
         if: always()
         run: docker compose down -v
