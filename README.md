@@ -7,7 +7,7 @@ Project layout
 run-walk-pipeline/
 ├── data/ (raw data goes here)
 ├── lake/ (Parquet lake)
-├── warehouse/ (SQLite analytics DB)
+├── warehouse/ (DuckDB analytics DB)
 ├── ingestion/ingest.py (script to convert CSV -> Parquet)
 ├── transform/transform.sql (SQL to create analytics table)
 ├── dashboard/app.py (very small Flask app to serve analytics)
@@ -115,9 +115,33 @@ import pandas as pd
 from sqlalchemy import create_engine
 
 df = pd.read_parquet('lake/parquet/runs.parquet')
-engine = create_engine('sqlite:///warehouse/analytics.db')
-df.to_sql('runs', engine, if_exists='replace', index=False)
-# then execute SQL in transform/transform.sql against warehouse/analytics.db
+	# for a local quick transform we write the Parquet into a DuckDB file
+	# and then execute SQL in transform/transform.sql against `warehouse/analytics.duckdb`.
+
+DuckDB and materialized summaries
+---------------------------------
+
+This project uses DuckDB for local analytics. The transform SQL materializes
+several small summary tables into `warehouse/analytics.duckdb` (so the dashboard
+can query them quickly without scanning the full Parquet every time):
+
+- `daily_user_summary` — per date and username aggregates (sample counts, avg/max accel/gyro, top_activity, top_wrist)
+- `daily_activity_counts` — counts of each activity code per date/user
+- `daily_wrist_counts` — counts of wrist values per date/user
+
+To materialize these tables run the transform script from the repo root (recommended):
+
+```bash
+source .venv/bin/activate
+python -m transform.run_transform
+```
+
+If your environment doesn't have DuckDB installed, add it to your requirements:
+
+```bash
+pip install duckdb
+# or add `duckdb` to requirements.txt
+```
 ```
 
 5. Start the dashboard (Flask):
