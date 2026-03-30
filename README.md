@@ -191,3 +191,32 @@ Notes
 - The Airflow DAG is an example and may require adjusting Python path so Airflow can import the `ingestion` package.
 - This repository is intentionally minimal to be a starting point. Add CI, tests and configuration as needed.
 
+Airflow DAG (Pipeline orchestration)
+-----------------------------------
+
+An example DAG is provided at `airflow/dag.py`. It runs the sequence:
+
+- download (ingestion.download_kaggle.download_dataset)
+- ingest (ingestion.ingest.ingest_csvs_to_parquet)
+- transform (transform.run_transform)
+
+To run the DAG locally with the Airflow CLI you may need to make the
+repository importable by the Airflow worker. Two common approaches:
+
+1. Add the repo root to `PYTHONPATH` in the Airflow environment, for example:
+
+```bash
+export PYTHONPATH=$(pwd):$PYTHONPATH
+airflow dags list
+```
+
+2. Alternatively, install the repository into the same Python environment
+	used by Airflow (editable install during development):
+
+```bash
+pip install -e .
+```
+
+The DAG is intentionally simple and uses lazy imports inside the task
+functions so the scheduler can parse the file without executing heavy code.
+
