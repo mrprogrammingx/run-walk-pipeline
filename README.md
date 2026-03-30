@@ -27,6 +27,29 @@ pip install -r requirements.txt
 
 2. Put CSV files in `data/raw/`.
 
+Makefile (recommended)
+----------------------
+
+This repository includes a small `Makefile` with convenient targets for local development. Using `make` is the easiest way to create the venv, download the dataset (via the downloader), run ingestion and run tests.
+
+Common targets:
+
+```bash
+# create and activate the virtualenv and install deps
+make venv
+
+# download dataset into data/raw/ (uses .env KAGGLE_API_TOKEN or ~/.kaggle)
+make download
+
+# run the ingestion step (CSV -> Parquet)
+make ingest
+
+# run the test suite (pytest)
+make test
+```
+
+If you don't have `make` available you can use the equivalent commands shown elsewhere in this README (for example `python -m ingestion.download_kaggle` and `python -m ingestion.ingest`).
+
 Dataset source
 ---------------
 
