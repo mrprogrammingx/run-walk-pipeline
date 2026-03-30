@@ -20,6 +20,11 @@ PARQUET_PATH = os.path.join(PROJECT_ROOT, "lake", "parquet", "runs.parquet")
 DB_PATH = os.path.join(PROJECT_ROOT, "warehouse", "analytics.duckdb")
 TRANSFORM_SQL = os.path.join(PROJECT_ROOT, "transform", "transform.sql")
 
+# Ensure the project root is on sys.path so local imports like `ingestion` work
+import sys
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
 # import ingestion function lazily inside task
 
 def task_ingest(**kwargs):
@@ -56,21 +61,27 @@ default_args = {
     "owner": "airflow",
     "start_date": datetime(2023, 1, 1),
 }
+if HAS_AIRFLOW:
+    with DAG(
+        dag_id="run_walk_pipeline",
+        default_args=default_args,
+        # Run on demand by default; change to '@daily' or cron if you want scheduling
+        schedule=None,
+        catchup=False,
+        tags=["example"],
+        # create the DAG in an unpaused state so it's immediately runnable in dev
+        is_paused_upon_creation=False,
+    ):
+        download = PythonOperator(task_id="download", python_callable=lambda **kw: __import__('ingestion.download_kaggle', fromlist=['']).download_dataset(RAW_DIR))
+        ingest = PythonOperator(task_id="ingest", python_callable=task_ingest)
+        transform = PythonOperator(task_id="transform", python_callable=task_transform)
 
-with DAG(
-    dag_id="run_walk_pipeline",
-    default_args=default_args,
-    # Run on demand by default; change to '@daily' or cron if you want scheduling
-    schedule_interval=None,
-    catchup=False,
-    tags=["example"],
-):
-    download = PythonOperator(task_id="download", python_callable=lambda **kw: __import__('ingestion.download_kaggle', fromlist=['']).download_dataset(RAW_DIR))
-    ingest = PythonOperator(task_id="ingest", python_callable=task_ingest)
-    transform = PythonOperator(task_id="transform", python_callable=task_transform)
-
-    # Pipeline order: download -> ingest -> transform
-    download >> ingest >> transform
+        # Pipeline order: download -> ingest -> transform
+        download >> ingest >> transform
+else:
+    # When Airflow is not available we skip DAG construction. The module still
+    # exposes the task functions and a small CLI below for local development.
+    pass
 
 
 def _print_no_airflow_help():
