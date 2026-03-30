@@ -134,6 +134,15 @@ can query them quickly without scanning the full Parquet every time):
 - `daily_activity_counts` — counts of each activity code per date/user
 - `daily_wrist_counts` — counts of wrist values per date/user
 
+Code mappings
+-------------
+
+The dataset uses numeric codes for activity and wrist. These map to human
+readable labels as follows (also available in `run_walk_constants.py`):
+
+- activity: `0` = walking, `1` = running
+- wrist: `0` = left, `1` = right
+
 To materialize these tables run the transform script from the repo root (recommended):
 
 ```bash
