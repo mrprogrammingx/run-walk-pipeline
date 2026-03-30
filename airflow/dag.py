@@ -6,8 +6,12 @@ from datetime import datetime
 import os
 import duckdb
 
-from airflow import DAG
-from airflow.operators.python import PythonOperator
+HAS_AIRFLOW = True
+try:
+    from airflow import DAG
+    from airflow.operators.python import PythonOperator
+except Exception:  # pragma: no cover - environment dependent
+    HAS_AIRFLOW = False
 
 # Local helper imports (make sure Airflow's PYTHONPATH includes the project root)
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -67,3 +71,40 @@ with DAG(
 
     # Pipeline order: download -> ingest -> transform
     download >> ingest >> transform
+
+
+def _print_no_airflow_help():
+    print("Airflow is not installed in this environment.")
+    print("To run the DAG with Airflow, either:")
+    print("  - run it inside an Airflow installation (pip install apache-airflow)\n  - or use the provided docker-compose setup to run Airflow containers.")
+    print("\nYou can still run individual tasks manually from this script:")
+    print("  python airflow/dag.py ingest    # run ingestion (CSV->Parquet)")
+    print("  python airflow/dag.py transform # run transform (Parquet->DuckDB)")
+    print("  python airflow/dag.py download  # run dataset download (requires Kaggle config)")
+
+
+if not HAS_AIRFLOW and __name__ == "__main__":
+    # lightweight CLI to run tasks without Airflow installed (for dev)
+    import sys
+
+    if len(sys.argv) < 2:
+        _print_no_airflow_help()
+        sys.exit(1)
+
+    cmd = sys.argv[1].lower()
+    if cmd == "ingest":
+        print("Running ingest task (CSV -> Parquet)")
+        task_ingest()
+    elif cmd == "transform":
+        print("Running transform task (Parquet -> DuckDB)")
+        task_transform()
+    elif cmd == "download":
+        print("Running download task (may require Kaggle credentials)")
+        # import and run downloader
+        from ingestion.download_kaggle import download_dataset
+
+        download_dataset(RAW_DIR)
+    else:
+        print(f"Unknown command: {cmd}\n")
+        _print_no_airflow_help()
+        sys.exit(2)
